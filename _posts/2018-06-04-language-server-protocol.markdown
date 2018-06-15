@@ -31,6 +31,7 @@ I was recently working on something related to language servers. To test stuff o
 + The result was spectacular. It is just beautiful.
 + The list of packages that need to be installed for support are `company-lsp`, `lsp-ui`, `lsp-mode`
 + Here is what needs to be added to your `.emacs` file to get nice lsp support:
+
 ```
 ;; In general wrt to lsp, autocompletion and snippets
 (require 'lsp-mode)
@@ -54,10 +55,11 @@ I was recently working on something related to language servers. To test stuff o
 
 ```
 
-+ Also, to enable in a project use:
++ To enable it, use:
+
 ```
 M-x lsp-cquery-enable
 M-x company-mode
 ```
 
-I think that needs to be automated.
+Guess that needs to be automated.
