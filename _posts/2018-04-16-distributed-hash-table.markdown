@@ -7,7 +7,7 @@ img:
 ---
 Came across distributed hash tables when trying to *lookup* on key value stores.
 
-A Distributed Hash Table is a structure which supports lookup/resource discovery in large peer-to-peer distributed systems.
+A Distributed Hash Table is a structure which supports lookup/resource discovery in large peer-to-peer distributed systems, where storage and lookups are distributed among multiple machines.
 
 It is a building block for peer-to-peer applications.
 

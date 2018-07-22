@@ -8,6 +8,8 @@ date: 2018-04-04  +0648
 
 Chord is a distributed lookup protocol which solves the problem of locating data items in a dynamic system with frequent node arrivals and departures.
 
+Given a key, it finds the node containing the key.
+
 It uses consistent hashing technique.
 
 DNS.
