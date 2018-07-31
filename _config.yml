@@ -1,15 +1,18 @@
 title: Kavya G
 description: > # this means to ignore newlines until "baseurl:"
-  3rd year undergraduate in Computer Science in IIT Madras.
+  4th year undergraduate in Computer Science at IIT Madras.
 baseurl: "" # the subpath of your site, e.g. /blog
-url: "http://silversoldier.github.io" # the base hostname & protocol for your site, e.g. http://example.com
+url: "http://www.gkavya.in" # the base hostname & protocol for your site, e.g. http://example.com
 permalink: ':title/'
 blog_theme: dark # Or use dark
 
 # Profile information
 name: Kavya G
-tagline: 3rd year undergraduate in Computer Science in IIT Madras.
-about-description: Interested in systems and system concepts like networks, blockchain, operating systems. 
+tagline: 4th year undergraduate in Computer Science at IIT Madras.
+
+about-description: Interested in systems topics like networks, blockchain, operating systems, distributed systems, cloud computing etc. 
+
+about-description1: Avid vim user now shifting to Emacs (thanks to org-mode, evil and emacs-lsp). 
 
 # Contact links
 email: soldatargent@gmail.com # Add your Email address

@@ -9,24 +9,17 @@ layout: default
   <div class="about">
     <div class="container-face">
     </div>
-    <h2 class="tagline">{% if site.tagline %}{{site.tagline}}{% else %}Full Stack Developer{% endif %}</h2>
+    <h2 class="tagline">{{site.tagline}}</h2>
     <div class="about-description">
-      <p>{% if site.about-description %}{{site.about-description}}{% else %}Lorem ipsum dolor sit amet, consectetur adipisicing elit. Iure culpa velit, obcaecati veniam quas, sed labore quo illo ipsam officiis, cum debitis aliquid dolorum autem quam. Officia voluptate, cupiditate illum?{% endif %}</p>
+      <p>{{site.about-description}}</p>
+	  <p>{{site.about-description1}}</p>
+	  <p>{{site.about-description2}}</p>
     </div>
     <div class="contact-contaiver">
       <ul class="contact-list">
 
-        {% if site.email %}
           <li class="email"><a href="mailto:{{site.email}}"><i class="fa fa-envelope-o"></i> {{site.email}}</a></li>
-        {% else %}
-          <li class="email"><a href="mailto:sheludkoartem@gmail.com"><i class="fa fa-envelope-o" aria-hidden="true"></i> sheludkoartem@gmail.com</a></li>
-        {% endif %}
-
-        {% if site.github %}
           <li class="github"><a href="http://github.com/{{site.github}}" target="_blank"><i class="fa fa-github"></i> github.com/{{site.github}}</a></li>
-        {% else %}
-          <li class="github"><a href="http://github.com/artemsheludko" target="_blank"><i class="fa fa-github" aria-hidden="true"></i> github.com/artemsheludko</a></li>
-        {% endif %}
 
       </ul>
     </div>
