@@ -17,10 +17,11 @@ The *n* threads/processes will hereby be referred to as UE (Unit of Execution), 
 I'll skip writing in detail, the 2 most obvious methods
 
 + Method I: 
-	We give
-which misses some of tasks.
+	We give each UE `m/n` tasks which misses some of tasks.
 
-+ Method II: which gives all the remaining to the last UE and jump to the actual solution.
++ Method II: which gives all the remaining to the last UE
+
+and jump to the actual solution.
 
 We first each of the UE's an equal chunk of the tasks. The remainder will be given to the first remainder UEs.
 

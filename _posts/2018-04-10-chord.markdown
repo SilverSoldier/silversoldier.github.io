@@ -1,26 +1,16 @@
 ---
 layout: post
-title:  "Chord: A scalable Peer-to-Peer Lookup Protocol for Internet Applications"
-description: An introduction to memory consistency models.
+title:  "Distributed Systems Terminology"
+description: 
 img:
 date: 2018-04-04  +0648
 ---
 
-Chord is a distributed lookup protocol which solves the problem of locating data items in a dynamic system with frequent node arrivals and departures.
+## Consistent Hashing
 
-Given a key, it finds the node containing the key.
+*Consistent hashing is a hashing function which changes minimally as the range of the function grows*
 
-It uses consistent hashing technique.
+## Gossip protocol
 
-DNS.
-
-## System Model
-#### Problems to be addressed in general Peer-to-Peer systems
-+ Scalability
-+ Availability
-+ Load balance
-+ Decentralization
-+ Flexible naming
-
-## Chord protocol explained
-+ Chord ring/identifier circle
+### Items to look up
++ **Harvest cache**: A tree of caches, where a miss forwards the request to sibilings and then parent.
