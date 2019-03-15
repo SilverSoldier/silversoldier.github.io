@@ -12,7 +12,9 @@ tagline: 4th year undergraduate in Computer Science at IIT Madras.
 
 about-description: Interested in systems topics like networks, blockchain, operating systems, distributed systems, cloud computing etc. 
 
-about-description1: Avid vim user now shifting to Emacs (thanks to org-mode, evil and emacs-lsp). 
+about-description1: Avid vim user now shifting to Emacs (thanks to org-mode, evil). 
+
+# about-description2: Like learning and trying new programming languages
 
 # Contact links
 email: soldatargent@gmail.com # Add your Email address
