@@ -1,0 +1,82 @@
+---
+layout: post
+title:  "Paxos Consensus Algorithm"
+description: My understanding of the Paxos Consensus Algorithm papers
+img:
+date: 2019-04-01  +1500
+---
+
+## Understanding Paxos
+### 1.What is the research problem the paper attempts to address?
+<!-- what is the niche of the paper? -->
+The core problem that the paper addresses is achieving consensus in a distributed system. Consensus has the following requirements:
+
+1. Consistency: All processes must agree on the **same** value.
+2. Correctness: The value agreed upon must be correct (a value proposed by some process).
+
+The final value must be eventually known to all the processes.
+
+It could also be mentioned as:
+
+1. Safety: Bad things never happen, (different processes should not finalize different values, the value proposed must be one suggested by at least one process)
+2. Liveness: Good things eventually happen (All processes must eventually agree on a value).
+
+It should be achieved in the following conditions:
+
+1. Processes may arbitrarily crash and can operate at arbitrary speeds.
+2. Communication between processes is via messages. Messages may fail to be delivered or may be delivered out of order.
+
+### 2.What are the claimed contributions of the paper?
+<!-- what is innovative about this paper -->
+The paper proposes a consensus protocol among processes which achieves consistency and correctness.
+
+The processes can take the following roles:
+
+1. Proposers: Propose values
+2. Acceptors: May promise and accept values
+3. Learners: Learn about the accepted values from 
+
+Each process can have more than one role. At the end of a round, all processes will agree on the same value.
+
+A proposer proposes an ID. The ID must be unique among all messages.
+
+One way of achieving this is the following:
+
+Suppose there are N proposers. Proposer 1 gets IDs 1, N+1, 2N+1  and so on.
+
+Proposer 2 gets IDs 2, N+2, 2N+1 and so on.
+
+### 3.How do the authors substantiate their claims?
+<!-- what makes the claims scientific -->
+
+The algorithm follows the following steps:
+
+#### Phase 1
+1. Proposer: Send PREPARE ID to all acceptors
+2. Acceptor:
+
+	1. If already promised to ignore messages lower than a higher ID, ignore it
+	2. Else:
+		1. If it has accepted a previous message from ID Id' with value v: Send PROMISE ID accepted Id' v, so proposer 2 can only propogate this v
+		2. Else promise to ignore messages lower than this ID and send PROMISE ID
+
+	If majority promise X, any message with ID < X will not go through this step.
+
+#### Phase 2
+3. If proposer receives a PROMISE message from a majority of the acceptors, send ACCEPT-REQUEST  ID value
+
+	If the PROMISE had a value, then ACCEPT-REQUEST must have that value, else the proposer can propose any value
+
+4. Acceptor: 
+
+   1. If promised to ignore messages lower than some higher ID, then ignore 
+   2. Else ACCEPT ID and send value to all learners.
+
+5. Proposer and learners get ACCEPT message. If majority of acceptors send accept message, consensus is reached.
+
+#### Learners
+Learners can learn the final value by receiving messages from all the acceptors and then choosing the value if a majority of the acceptors accept the value.
+
+Since this results in a lot of communication, there can be a role of distinguished learner which will receive messages from all the acceptors and further propagates it to the learners. However, if the distinguished learner fails, then another processes needs to be elected and so on.
+
+Instead, a group of learners could be used as distinguished learners which trades-off between reliability and efficiency.
