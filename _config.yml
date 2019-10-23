@@ -12,7 +12,7 @@ tagline: 5th year undergraduate in Computer Science at IIT Madras.
 
 about-description: Interested in systems (blockchain, operating systems, distributed systems, cloud computing), applied cryptography and systems security. 
 
-about-description1: I don't use Vim or Emacs, I use Vim and Emacs (evil)
+about-description1: Avid reader. Recently started writing poetry, having decided to produce content instead of just consuming.
 
 #Contact links
 email: soldatargent@gmail.com # Add your Email address
@@ -44,5 +44,7 @@ gems:
 exclude:
   - Gemfile
   - Gemfile.lock
+
+exclude: [vendor]
 
 include: [_pages]

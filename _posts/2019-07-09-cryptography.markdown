@@ -70,11 +70,12 @@ Threshold scheme is a multi-party public key cryptosystem that requires T-of-N p
 ## Not-so-popular Topics
 ### Differential Privacy
 
-### Order Preserving Encryption
+### Order Preserving Encryption/Order Revealing Encryption
 An encryption scheme that allows a third party to perform comparisons on encrypted values. 
 
 + Involves a symmetric key encryption, where all the values are encrypted by the same party with the same symmetric key.
 + Useful for database related applications, where the database encrypts the values for computation on the cloud.
++ Mostly only found references [on Stanford's crypto page]()
 
 ### Verifiable Encryption
 Alice encrypts a value v which satisfies some cryptographic property M. Prove that the encryption is of a value satisfying the property.
@@ -115,3 +116,7 @@ Paper: [Public-Key Cryptosystems Based on Composite Degree Residuosity Classes](
 It is a set of cryptography schemes based on the Decisional Composite Residuosity Assumption.
 
 The assumption is that it is intractable to distinguish/find n-th residues modulo n^2.
+
+## Useful General Links
+1. [Ben Lynn's set of assorted notes](https://crypto.stanford.edu/pbc/notes/)
+2. [Set of relevant crypto papers](https://eprint.iacr.org/complete/)
