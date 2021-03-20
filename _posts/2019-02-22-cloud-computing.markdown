@@ -156,19 +156,20 @@ It uses a in-memory dataset called Reliable Distributed Dataset, which is NOT a 
 	+ Must keep actively polling to check if new message has been produced.
 5. **Partition**: Subgroup of topic
 
+## Architecture
+Kafka stores key-value messages that arrive from multiple producers. The data from various producers is partitioned into many *partitions* within different *topics*.
+
 ### Partitions
 Partitions store records as an ordered immutable sequence. A partition is a single log stored durably on disk.
 
-Records are added to partitions in an append-only fashion.
+Records are added to partitions in an append-only fashion.  There can be replicas of partitions.
 
-There can be replicas of partitions.
+Messages do not have unique ids, they are uniquely determined by their offset in a partition  making it **stateless**. Producers do not store state regarding consumer (which message it has read etc.)
 
-Messages do not have unique ids, they are uniquely determined by their offset in a partition.
-
-It is **stateless**. Producers do not store state regarding consumer (which message it has read etc.)
+## Applications
+Kafka is used typically for building real-time streaming applications or data pipelines which receive data stream from a system and transform or forward it to other applications.
 
 ## NoSQL Databases
-
 ### CAP Theorem
 1. Consistency: All replicas have same data, client has same view of data.
 2. Availability: System remains operational even if individual units fails.

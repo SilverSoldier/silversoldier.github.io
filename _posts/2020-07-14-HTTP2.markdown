@@ -1,0 +1,92 @@
+---
+layout: post
+title:  "HTTP2 Protocol"
+description: A quick study on HTTP2 protocol
+img:
+date: 2020-07-14  +0648
+---
+
+HTTP/2, based on Google's SPDY protocol, has been released as an IETF standard from 2015 onwards. Here, I try to document its features, how it differs from HTTP (HTTP/1) etc.
+
+# Features and Differences from HTTP/1.0
+
+## Introduction
+
+### Differences
+From the RFC specification, HTTP/2.0 mainly provides the following additional features:
+1. Stream multiplexing, allowing multiple requests on a single TCP connection. Flow control prevents congestion of packets and prioritization allows unequal allocation of resources taking priority and dependencies into consideration.
+2. Compression of the header, removing repetitive fields and compressing multiple fields into a single packet. Further, the header is sent using binary encoding (instead of plaintext) making it more efficient.
+3. Servers can speculatively push data to clients.
+4. While the RFC specification allows for HTTP/2 to be used with or without SSL, all browsers only support HTTP/2 with SSL. It is said that SSL support comes with much lower performance overheads.
+
+Overall, it aims to improve network latency and reduce the number of TCP connections.
+
+HTTP/2 uses the same uri schemes (http and https) and the same port numbers (80 and 443).
+
+### http requests
+Clients sending HTTP/1.O requests are automatically ugraded to HTTP/2.0 if the header contains the 
+
+```
+Upgrade: h2c
+Connection: Upgrade, HTTP2-Settings
+```
+
+`h2c` indicates the HTTP/2 protocol running over cleartext TCP connection (without TLS).
+
+### https requests
+
+Further, the client and server exchange a connection preface (a specific string).
+The server sends a Switching Protocol (101) response and the client responds with the connection preface
+
+## Header Compression and Decompression
+Zero or more header fields are collected to form the header list. The header list is compressed using HPACK compression reducing header data.
+
+Further, header is transmitted using binary encoding making it more efficient and reducing frame size.
+
+## Stream Multiplexing
+HTTP/1 only allows one outstanding request on a TCP connection resulting in in-order completion of requests. HTTP/1 clients which need to send multiple requests use multiple TCP connections.
+
+HTTP/2 defines a stream as a bi-directional exchange of frames between a server and a client.
+
+A TCP connection can contain multiple concurrent streams, allowing requests to be satisfied in parallel and out-of-order. This allows HTTP/2 to use a single persistant connection for a single webpage. Having a single connection minimizes SSL handshaking.
+
+Furthermore, multiplexing splits requests and responses into multiple streams, with flow control and prioritization. This helps reduce head-of-line blocking effects.
+
+### States
+Streams can be in the following states:
+1. idle: initial/start state
+2. reserved (local): a stream that is reserved by sending a PUSH_PROMISE frame from another stream.
+3. reserved (remote): a stream that is reserved by receiving a PUSH_PROMISE frame from another stream.
+4. open: sending or receiving a HEADERS frame. An open stream allows exchange of any type of frames.
+5. half-closed (local): sending a END_STREAM flagged frame, closes the connection at an endpoint.
+6. half-closed (remote): receiving a END_STREAM flagged frame, can be used to send any type of frames, but restricts the type of frames that can be received.
+7. closed
+
+Streams are identified by a 31-bit stream identifier. Clients and servers can specify the maximum number of streams that the other can initiate (this only includes open and half-closed connections).
+
+### Flow control, prioritization and dependencies
+Flow control deals with contention over the use of the TCP connection. It is directional and uses the WINDOW_UPDATE frames for constraining and credits.
+
+Priority for streams can be assigned by the client in the HEADERS, for allocation of resources to a stream. Priority is in the form of weight (which varies from low (1) to high (256)).
+
+Streams can be marked as dependant on other streams for completion, to prefer allocation of resources to the stream that it depends on.
+
+# Server Push
+HTTP/2 allows a server to pre-emptively push responses to a client for a particular request. Client can disallow if it does not want it. The resource goes into the browser's cache.
+
+It is not yet supported by nginx.
+
+# Usage
+A `nginx` server can be made to use the HTTP/2 protocol by adding the `http2` parameter to the listen directives. While the RFC allows HTTP/2 to be used with or without SSL/TLS, browsers do not support HTTP2 without encryption, so using SSL is mandatory.
+ 
+```
+server {
+	listen 443 ssl http2 default_server;
+	...
+}
+```
+
+# Resources
+1. [RFC](https://tools.ietf.org/html/rfc7540)
+2. [Nginx Blog](https://www.nginx.com/blog/http2-r7/)
+3. [Slides from a talk by Ilya Grigorik](https://www.igvita.com/slides/2012/http2-spdy-devconf.pdf)
