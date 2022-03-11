@@ -18,25 +18,21 @@ Most economics applications fall into game theory and so does warfare and sociol
 
 ## Terminology
 1. **Co-operative vs non co-operative game theory**:
-
   In co-operative game theory, we assume binding agreements between parties is possible. Examples include various cities or countries. In non co-operative game theory, agreements are not possible. This gives the feeling of byzantine or malicious entities which might deviate from any agreements and protocols. NOTE: It just models real world entities which may not be able to communicate with each other or cannot form a binding agreement with each other.
 
 2. **Sequential vs Simultaneous Games**:
    In sequential games, there is a strict order of play (turns). In simultaneous games (as the name suggests), players move simultaneously. This simplifies that they do not act based on the other's inputs. For instance, *rock-paper-scissors* or *sealed-bid auctions* are simultaneous games
+
 2. **Strategies**:
-	
   Strategies are the choices available to the players. In case of sequential games, it represents the set of actions that each player takes.
 
 3. **Payoffs**:
-
   A numerical value assigned to each possible outcome of combination of players' strategies. It takes into account various factors - winning amount (in case the game involves money, it could represent the actual amount of money), fairness (some players may rate fairness more than amount they win) etc. In case of random combination of strategies (mixed strategy), it represents the expected payoff.
 
 4. **Rationality**:
-
   We assume that each player has a set of rankings of outcomes (based on payoffs) and chooses the best alternative over all applicable outcomes. NOTE: Players are not always selfish, we incorporate their ideas of fairness etc. into the payoff calculations. Similarly, they choose a long-term optimal strategy.
 
 5. **Evolutionary/Dynamic Game Theory**:
-
   A more biologically motivated subspace, where we assume that players learn from previous games and their outcomes.
 
 # Sequential Games
@@ -66,6 +62,9 @@ We further distinguish non-cooperative games as non-zero sum and zero sum games.
 
 ## Two person cooperative games, John Nash, 1953
 Finally understood a mixed strategy. A mixed strategy involves randomly choosing (with or without using probabilities) between multiple pure strategies.
+
+
+I am probably done with topic now and will be moving to something else. I admit these notes are extremely incomplete, but on the plus side, if I ever get interested in Game Theory again, I know where to add notes.
 
 # Resources
 1. [MIT](https://ocw.mit.edu/courses/economics/14-126-game-theory-spring-2016/)
