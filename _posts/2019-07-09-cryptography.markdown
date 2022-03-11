@@ -60,9 +60,13 @@ Generalized version of the millionaire's problem, where any function can be comp
 
 The N parties should be able to compute the correct result with privacy even if some of them are adverserial/malicious and give wrong inputs.
 
-How to Play any Mental Game or A Completeness Theorem for Protocols with Honest Majority.
+There are a lot, by which I mean a LOT of MPC protocols out there, ranging from supporting honest majority to dishonest majority, semi-honest adversaries to malicious adverseries and son on.
 
-In 19th ACM Symposium on Theory of Computing, 1987. Oded Goldreich, Silvio Micali, and Avi Wigderson.
+[MP-SPDZ](https://github.com/data61/MP-SPDZ) is one of the best open-source code bases that I have found for any practical MPC implementations.
+
+#### Links and References
+1. How to Play any Mental Game or A Completeness Theorem for Protocols with Honest Majority.
+2. 
 
 ### Threshold encryption and decryption schemes
 Threshold scheme is a multi-party public key cryptosystem that requires T-of-N parties to encrypt/decrypt.
@@ -116,6 +120,265 @@ Paper: [Public-Key Cryptosystems Based on Composite Degree Residuosity Classes](
 It is a set of cryptography schemes based on the Decisional Composite Residuosity Assumption.
 
 The assumption is that it is intractable to distinguish/find n-th residues modulo n^2.
+
+## India Cryptography Meet
+Some topics and notes from the India Crypto Meet organized on 16.07.20. Contains some high level topics for future references and notes when I was able to follow and type at the same time.
+
+The notes could be better organized, but the important point is that there are quite a few new and interesting techniques that were mentioned in the talk, which hopefully I have managed to note down.
+
+### Reverse Firewall (Chaya Ganesh)
+Preserving security even when honest parties' machines are subverted. We include corrupt implementations.
+
+Reverse firewall which santitizes inputs and outputs of a machine.
+
+It should maintain functionality of protocol. Output of protocol must remain the same.
+
+Firewall is not a trusted party.
+
+A corrupted implementation along with a reverse firewall is expected to maintain the same security as a non corrupted implementation. Protocol with firewall is secure for corrupt implementation of Alice.
+
+#### Reverse Firewalls for Interactive Proofs
+- Subversion resistance in Non-interactive zero knowledge
+  - Security under parameter subversion, still assumes trusted implementation.
+
+- Zero Knowlege Proofs:
+	- Completeness: Honest verifier is convinced of a true statement
+	- Soundness: Dishonest prover cannot prove honest verifier of incorrect statement.
+	- Zero Knowledge: Cheating verifier cannot learn anything more than truth of statement
+	- Special Soundness:
+	- Special HVZK
+
+Subverted Prover can leak bits of witness, which a Reverse Firewall cannot stop.
+
+Functionality-maintaining tempering: protocol is still functional when prover replaced with subverted prover.
+
+General firewall for all sigma protocols:
+randomize prover's first message (in case it sends witness etc.)
+
+- Malleable Sigma Protocol
+
+- Security Preservation: ZK Preservation
+- Exfiltration resistance: Protect implementation leaking secrets.
+
+#### OR Transform (Cramer, Damgard ..CDS94)
+Interesting technique ???
+
+### Differential Privacy (Manoj Prabhakaran)
+Dwork, McSherry, Nissim, Smith TCC 2006
+
+The talk defines Differential Privacy as a success story in privacy techniques for statistical databases and talks about some limitations and how they can be addressed.
+
+Mechanism to guard data, guarantee privacy while allowing statistical computations on it.
+
+Only information revealed is information that would be revealed even if the individual does not contribute to database.
+Information that might have been learned without the individual's contribution.
+
+Stronger definition: Cannot even tell if a given individual has contributed to the database. (Membership itself is private, for instance medical trial related datasets).
+
+Output of mechanism is an approximation of the desired function.
+
+High level definition is to add some noise to the data. Amount of noise to add depends on the sensitivity of the function.
+
+Typically, we use the Laplace Mechanism, where the noise is a laplacian curve.
+Other noise distributions exist such as smooth sensitivity, exponential, randomized response (no central mechanism to add noise, each individual themselves add some noise to the response).
+
+Adding noise does come with its limitations especially for high sensitivity functions, where adding noise destroys utility. One example of this is the max function.
+
+To address this, we introduce a notion of accuracy while the privacy notion is unchanged.
+
+Secondly, privacy cannot be guaranteed across databases. For instance, if we use one of 2 different databases, we might reveal which database was used.
+
+To address this, we introduce a more robust definition of privacy.
+
+#### Flexible Accuracy
+PAC: Probably Approximately Correct
+
+Probability that the approximation deviates too much from the actual value is bounded.
+
+We define a close dataset D* to the original dataset D if it can be obtained by dropping a few elements (outliers).
+This is a more reasonable definition of a neighboring dataset than allowing addition of a few elements to D which allows addition of some outliers which distorts too much.
+
+#### Earth Mover Distance (Wasserstein Distance)
+Quantifying distance between 2 distributions defined over a metric space.
+
+Defined as the minimum transportation cost to move soil around to change the distribution landscape, where cost is per mass per distance moved.
+
+**Post-Processing Theorem:** DP on the output of a DP mechanism does not result in any gain of privacy.
+
+#### Robust Privacy
+Two mechanisms are (\epsilon, \delta) indistinguishable if they are close in Wasserstein distance.
+
+They are only distinguishable if there is some utility in the distinguishability (i.e. in a useful way). 
+
+Out of the box, Differential Privacy does not provide this guarantee.
+
+
+Typically cryptography demands correctness of output, while DP allows leeway on the correctness of the output to provide for privacy.
+
+### One Way Secure Computation
+- OWSC captures the idea of secure computation using noisy channels.
+- There exist finite channels that are OWSC-complete with inverse-polynomial error.
+- Characterization of channels that allow ZK functionality.
+- Open problem: Can we characterize channels that are OWSC-complete?
+- Bit-ROT and String-ROT
+
+### On Communication Models and Best-Achievable Security in 2-Round MPC
+MPC: Realizing functionality of a trusted central party in real world, with untrusted adverserial parties.
+
+Communication Models:
+- Broadcast
+- Point-to-Point
+- Public Key Infrastructure
+
+Adversary Models:
+- Identifiable Abort
+- Guaranteed Output Delivery
+
+Transformation from 2-round n-party over BC with only one corruption into 2-message secure OT protocol.
+
+Equivalence of dishonest and honest majority wrt OT.
+
+If a corrupt party does not send a message, honest parties cannot abort since it is indistinguishable from the corrupt receiver which lies about not receiving the message.
+
+#### Summary
+- Reduction to OT in the broadcast-only model achieving full malicious security? (Presently only semi-honest secure)
+- Improving communication and computational efficiencies of the current 2-round protocol.
+
+### Group Correlations and Applications in Cryptography (Guru Vamsi Polacherla)
+- Correlations in MPC
+
+### Breaking Barriers in Secret Sharing (Vinod Vaikuntanathan)
+Any authorized subset of parties can recover the secret, while no other subset of parties can recover any information about the secret.
+
+- Threshold Secret Sharing (Shamir '79, Blakely '79), where authorized subset has size >= t
+- General SS (Ito-Saito-Nishizeki '87), where tha authorized subsets are defined by a monotone function.
+	- Access Structure (monotone since a subset which includes an allowed subset must also be allowed). Monotone means that if a set of parties is authorized then every superset is also authorized.
+
+#### General Secret Sharing
+For every monotone access structure on n parties, there is a secret-sharing scheme with share size of 2^{0.994n} bits.
+
+Private Information Retrieval, Conditional Disclosure of Secrets
+
+### Conditional Disclosure of Secrets
+Public Fn F
+
+Alice has x and Bob has y. Charlie should learn secret only if F(x,y) = 1, without communication with each other and only communication with Charlie.
+
+Solution: Alice has a truth table.
+
+Communication is exponential in n. Protocols have linear reconstruction functions. However, message sizes need to be atleast O(2^n).
+
+To reduce message size, we use non-linear function.
+
+#### Private Information Retrieval
+To reduce communication smaller than the entire database (truth table).
+
+3-party primitive, where Alice and Bob share a database and Charlie holds an index x. The goal is that neither Bob nor Alice must learn the index x, while Charlie gets the results.
+
+##### PIR vs CDS
+Privacy: n bits (index) vs single bit
+Randomness: no common randomness vs common random string R
+Database: Replication of database vs No replication (one has a database and other has an index)
+
+##### Transformation of PIR upper bound to CDS
+Query Charlie sends queries q_0 and q_1 to DB0 and DB1 and Response Charlie gets H(q_0) and H(q_1).
+
+q_0 and q_1 can be looked at a secret sharing of the original query/secret.
+
+Suppose the PIR is a linear reconstruction PIR. Query Charlie is actually Alice and the DB0 is Bob. The first message is a random string which is shared with Bob.
+
+Response Charlie and DB1 are represented by Charlie, which knows the database in CDS and gets the response as well.
+
+Unfortunately, privacy is not preserved. Bob's message reveals the one-time pad randomness. A quick fix is to again add a random string to Bob's message.
+
+#### CDS and Secret Sharing
+Multiparty CDS for a forbidden hypergraph where the number of access functions is 2^{2^n/2}
+
+There are N parties which hold the index while one party holds the database.
+
+2-party CDS can be generalized to multi-party CDS.
+
+#### Secret Sharing
+Slice functions: Hamming weight type strings
+
+Represent general monotone function circuit as a combination of slice functions. Use every possible slice function as a basis to construct the general function.
+
+#### Locally Decodable Codes
+
+#### Private Simultaneous Messages
+
+### Indistinguishability Obfuscation: New Opportunities (Amit Sahai)
+
+#### Indistinguishability Obfuscation
+Apply obfuscation compiler to circuits which compute the same function, output is hard to distinguish.
+
+New Cryptography:
+- Functional Encryption
+- Witness Encryption
+- (Doubly) Deniable encryptions
+- Hardness of finding hash
+- Correlation Interactable Hash etc.
+
+iO research: far from practical applications, exponential bounds
+
+**Whitebox cryptography** - ???
+
+### Format Preserving Encryption
+Block cipher: Family of permutations indexed by the secret key.
+
+Changing secret key in block cipher is quite costly.
+
+Liskov, Rivest and Wagner (Crypto 2002) - define a tweak as a third input.
+
+Brightwell and Smith, 1997 - Cipher text to plaintext relation
+
+FPE scheme applications include privacy of SSN and database entries.
+
+User specifies a format, the ciphertext must be within the same domain as the plaintext.
+
+#### FPE Security Notions (BRRS'09) - Bellare, Rogaway, Stegers
+- PRP: 
+	- Overkill in terms of performance (not efficient to handle PRP security)
+- SPI: Single Point Indistinguishability
+	- Distinguishing encryption of specific message m from that of a random string r
+- Message Privacy:
+	- Encryption reveals no information except format
+- Message Recovery:
+	- Cannot completely reveal message from the encrypted ciphertext.
+
+#### FPE techniques by Black and Rogaway
+- Rank-then-Encipher approach
+- Cyclic Technique
+	- Keep encrypting until ciphertext lies within same set.
+- Generalized Feistel
+
+
+Specific implementations use Feistel type structure and are FF1, FF2 and FF3 and FEA1/FEA2.
+FF1 - FF3 have been broken with known attacks while Korean standards FEA1/FEA2 have no known attacks.
+
+#### Substitution Permutation Network
+FPE designed using SPN paradigm
+
+
+### Authenticated Encryption
+
+### Lightweight Cryptography
+Solutions for resource-constrained devices such as RFID tags, smart cards, sensor nodes etc.
+
+### Oblivious and Fair Data Trading on Blockchain
+Privacy in data owner and user transactions, where data owner does not know what user requests.
+
+Owner has multiple files where each file has a searchword. User has searchword and money. User wants to purchase file containing searchword from the owner.
+
+#### Oblivious Search
+User can obliviously search for a document, located in third party remote server or in owner's local database
+
+Goal: Privacy of searchword
+
+Crypto: Searchable Encryption Scheme
+
+ODT algorithm using Bilinear Maps
+
 
 ## Useful General Links
 1. [Ben Lynn's set of assorted notes](https://crypto.stanford.edu/pbc/notes/)
