@@ -1,50 +1,31 @@
-title: Kavya G
-description: > # this means to ignore newlines until "baseurl:"
-  5th year undergraduate (Dual Degree) in Computer Science at IIT Madras.
-baseurl: "" # the subpath of your site, e.g. /blog
-url: "http://www.gkavya.in" # the base hostname & protocol for your site, e.g. http://example.com
-permalink: ':title/'
-blog_theme: dark # Or use dark
+title: "Kavya G"
+author: "Kavya G"
+description: "Research Engineer at IBM Research"
+permalink: /:title/
+lang: "en"
+excerpt_separator: "\n\n\n"
+date_format: "%B %d, %Y"
 
-# Profile information
-name: Kavya G
-tagline: 5th year undergraduate in Computer Science at IIT Madras.
+# Layout
 
-about-description: Interested in systems (blockchain, operating systems, distributed systems, cloud computing), applied cryptography and systems security. 
+show_excerpts: true        # show article excerpts on the home page
+show_frame: false           # adds a gray frame to the site
+show_sidebar: false        # show a sidebar instead of the usual header
+minimal: true             # use a dark header
 
-about-description1: Avid reader. Recently started writing poetry, having decided to produce content instead of just consuming.
+# Menu
 
-#Contact links
-email: soldatargent@gmail.com # Add your Email address
-github: SilverSoldier # Add your Github handle
+navigation:                # accepts {file, title, url, icon, sidebaricon}
+  - {file: "index.html"}
+  - {file: "about.md"}
 
-# Tracker
-analytics:
+external:                  # shows a footer with social links - for available icons see fontawesome.com/icons
+  - {title: Mail, icon: envelope, url: "mailto:soldatargent@gmail.com"}
+  - {title: Github, icon: github, url: "https://github.com/SilverSoldier"}
 
-# Comments
-discus-identifier: # Add your Disqus identifier
+comments:
+#  disqus_shortname: ""    # see https://disqus.com/
+#  isso_domain: ""         # see https://posativ.org/isso/
 
-# Important settings
-assets:
-  sources:
-    - assets/fonts
-    - assets/img
-    - assets/js
-    - assets/stylesheets
-
-# Build settings
-exclude:
-  - Gemfile
-  - Gemfile.lock
-  - README.md
-
-gems:
-  - jekyll-feed
-  - jekyll-assets
-exclude:
-  - Gemfile
-  - Gemfile.lock
-
-exclude: [vendor]
-
-include: [_pages]
+plugins:
+ - jekyll-feed
