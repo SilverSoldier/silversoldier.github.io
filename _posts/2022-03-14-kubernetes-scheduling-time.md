@@ -111,25 +111,25 @@ The `awk` command will get the pod names from the list of pods. When we use `get
 In the `tail` man page, we can see that the `+` sign indicates from the beginning of the input.
 
 ``` bash
-Numbers having a leading plus (`+') sign are relative
-     to the beginning of the input
+Numbers having a leading plus (`+') sign are relative to the beginning of the input
 ```
 
 Thus, the `+2` indicates that we want from the second line of the input onwards.
 
 The final script is shown below. 
 
-``` bash
+{% highlight bash linenos %}
 timestamp() {
     date '+%s' --date $1
 }
 for pod in $(kubectl get pods -l app=abc | awk '{print $1}' | tail -n +2); do
         create_time=$(kubectl get pod $pod -o json | jq '.metadata.creationTimestamp'  | tr '\"' ' ')
-        schedule_time=$(kubectl get pod $pod -o json | jq '.status.conditions|.[-1].lastTransitionTime' | tr '\"' ' ')
+        schedule_time=$(kubectl get pod $pod -o json | jq '.status.conditions | map(select(.type | contains ("PodScheduled")) | .lastTransitionTime) | .[0]' | tr '\"' ' ')
+		
         diff=$(( $(timestamp $schedule_time) - $(timestamp $create_time) ))
         echo $diff
 done
-```
+{% endhighlight %}
 
 The script can further be modified to report the average time over all the pods.
 
@@ -139,7 +139,7 @@ NOTE: The data used in Method 2 can be pulled from Prometheus as well. Specifica
 
 However, there is one problem with this entire approach. It only gives us the time in seconds, but unless we are testing at scale, the scheduling time would probably be in milliseconds, showing up as 0.
 
-As per the [already mentioned link](https://docs.splunk.com/Observability/gdi/kubernetes-scheduler/kubernetes-scheduler.html), there are some metrics that show the scheduling latency in microseconds, such as `scheduler_scheduling_algorithm_latency_microseconds` that are now deprecated.
+As per the [previously mentioned link](https://docs.splunk.com/Observability/gdi/kubernetes-scheduler/kubernetes-scheduler.html), there are some metrics that show the scheduling latency in microseconds, such as `scheduler_scheduling_algorithm_latency_microseconds` that are now deprecated.
 
 A quick check led to [kubernetes v1.18 change logs](https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG/CHANGELOG-1.18.md) which show that from v1.14 onwards the microseconds metrics are deprecated and to use the seconds ones instead.
 
