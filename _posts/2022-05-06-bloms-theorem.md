@@ -103,9 +103,7 @@ KL <- function(emu, esigma) {
 
 Here `mu` and `sigma` are the $$\mu$$ and $$\sigma$$ respectively of the original distribution, whereas the `emu` and `esigma` are those of the estimated distribution.
 
-What I have done is solve for the entropy and the KL-divergence[^!] for Gaussians and between Gaussians respectively. R also makes it quite easy to perform integrations, so the original equation could also have been solved here.
-
-TODO: Sources here for the formula
+What I have done is solve for the entropy and the KL-divergence[^1] for Gaussians and between Gaussians respectively. R also makes it quite easy to perform integrations, so the original equation could also have been solved here.
 
 #### Estimate Function
 ```R
