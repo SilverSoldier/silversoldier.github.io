@@ -70,7 +70,7 @@ Another method used the signals to either decrease or increase the log level. I 
 
 The following is an implementation in python (building on the above SO answer), where the `SIGUSR1` signal will increase the log level and `SIGUSR2` signal will decrease the log level.
 
-```
+```python
 #!/usr/bin/python
 import logging
 import time
