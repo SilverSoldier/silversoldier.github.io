@@ -1,7 +1,7 @@
 ---
 layout: post
-title:  "PyTorch parallelism"
-description: Parallelism and composability with PyTorch
+title:  "PyTorch parallelism (1)"
+description: Pytorch Device mesh and composability
 img:
 date: 2024-10-11  +1510
 ---
