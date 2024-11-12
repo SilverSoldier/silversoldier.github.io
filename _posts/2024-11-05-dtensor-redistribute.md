@@ -7,6 +7,8 @@ date: 2024-11-04  +1100
 ---
 
 Motivation: To understand PyTorch TP whose magic happens under the "Redistribute" call.
+
+## What is redistribute()?
 Redistribute is a torch.autograd.Function class with a forward function. It takes an input DTensor and a target Placement and calls `redistribute_local_tensor` if something needs to be changed and finally returns the "redistributed" DTensor (torch.distributed.tensor) as an output.
 There is also the `distribute_tensor` API, which takes a Tensor and converts into a DTensor.
 
@@ -14,6 +16,8 @@ There is also the `distribute_tensor` API, which takes a Tensor and converts int
 Currently it does not support if the source and target meshes are different. Which means, it only supports a change in placement strategy within the same mesh.
 
 It is called by the `redistribute()` API of `DTensor`, which in turn is used by parallelization algorithm (atleast TP does). For ex. in TP, the current DTensor is passed and redistribution is done to achieve the next module's input DTensor.
+
+## How does it work?
 
 The function has 2 parts: first is creating a list of transforms to go from the source placement to the target placement. This logic is handled by the `gen_transform_infos_non_cached` function. For a 1D mesh, redistribution is simple, but for an N-D mesh, this function implementation is a little bit complicated. The problem is in the case of nested sharding (sharding across multiple mesh dimensions), for which they do a reverse sweep over the mesh dimensions and if nested sharding occurs, need to Replicate once for this transform. Otherwise, in the simple case, the Transform path is for every mesh dimension, the path from source to dest placement from the inner (last dimension) to the outer (first dimension).
 
@@ -30,7 +34,7 @@ The first 3 are straightforward, the rest all quickly become weird cases. For 4 
 
 For 4. Replicate -> Partial says to skip when backward (basically forward input as is). For non-backward, it calls a `_partial_value` function which is defined per op. For embedding op, it seems to be defined like a form of sharding while for math they have some logic depending on the function to sort of split uniformly by value.
 
-6. Shard -> Partial is ONLY supported for backward and basically just behaves like Replicate for that. This is a bit confusing and misleading, but I am not an expert on when this is called, so should probably go with them on this.
+For 6. Shard -> Partial is ONLY supported for backward and basically just behaves like Replicate for that. This is a bit confusing and misleading, but I am not an expert on when this is called, so should probably go with them on this.
 
 I first thought 5 was a resharding, something like go from Shard into 4 before to Shard into 2 now. But that doesn't make sense when you think about it, since the `N_GPU` is not expected to be a dynamic parameter (atleast for now, could these Placements allow dynamism by re-using these APIs? food for thought). So 5 is about sharding but in a different dimension from before. When would this be needed? 2 levels of sharding occurs when composing, say FSDP + TP, where the same tensor is sharded once for TP and is sharded again (from another dimension for FSDP).
 
