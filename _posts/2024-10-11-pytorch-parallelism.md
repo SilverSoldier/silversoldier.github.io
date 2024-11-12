@@ -1,22 +1,23 @@
 ---
 layout: post
-title:  "PyTorch parallelism (1)"
-description: Pytorch Device mesh and composability
+title:  Pytorch Device mesh and composability
+description: "PyTorch parallelism: Part 1"
 img:
 date: 2024-10-11  +1510
 ---
 
 The goal is to understand how pytorch does parallelism, especially composing multiple parallelisms (such as FSDP, TP and PP) easily to create 2D and 3D parallelism strategies.
 
-All my experiments are on CPUs, running on a container using image: `nvcr.io/nvidia/pytorch:24.09-py3`. So, all the code is compatible with both CPUs and GPUs, though I didn't really test on GPUs.
+All my experiments are on CPUs, running on a container using image: `nvcr.io/nvidia/pytorch:24.09-py3`. While the code is compatible with both CPUs and GPUs, though I didn't really test on GPUs.
 
-First, it is important to understand PyTorch's Device Mesh which is one of the key techniques to enable composability.
+First, it is important to understand PyTorch's Device Mesh, the PyTorch abstraction for the GPU arrangement. The mesh underlies all of the PyTorch parallelism operations.
 
 ## Understanding Device Mesh
 
 Let's start with the simplest code for creating and examining a device mesh.
 
 ```python
+import os
 import torch.distributed as dist
 from torch.distributed.device_mesh import init_device_mesh
 
@@ -45,15 +46,14 @@ torchrun --node_rank=0 --nproc_per_node=6 --nnodes=1 --standalone test.py
 
 Note that the `nproc_per_node` has to match the total number of devices. If you try a smaller number, we get the error `Mesh should not be bigger than default world size, but found 6 ranks!`. If we have more processes, it can throw error `IndexError: list index out of range` when we try printing and examining the mesh later.
 
-Here, we want the TP to happen over 3 devices and DP to happen across the 2 "nodes". It starts the indexing from the outermost, so if the grid has devices with IDs 0 - 5, they are placed into 2 rows with 3 columns each:
+Here, we want the TP to happen over 3 devices (outermost size) and DP to happen across the 2 "nodes" (innermost size). It starts the indexing from the outermost, so if the grid has devices with IDs 0 - 5, they are placed into 2 rows with 3 columns each:
 
 ```
-<-     ->
 0   1   2
 3   4   5
 ```
 
-Where one parallel algorithm (say Tensor Parallelism) happens over the sets of machines {0, 1, 2} and {3, 4, 5} and the other (say Data Parallelism) happens across both sets.
+One parallel algorithm (TP) happens over the sets of machines {0, 1, 2} and {3, 4, 5} and the other (Data Parallelism) happens across both sets.
 
 We can verify this by printing the mesh for each dimension. But for this we need to name the dimensions else we get the error `Cannot slice a DeviceMesh without mesh_dim_names!`.
 
@@ -64,7 +64,7 @@ tp_mesh = device_mesh['tp']
 print(f'Rank: {dist.get_rank()}, {tp_mesh}')
 ```
 
-Here, we create the mesh and for each device we print it overall rank in the distributed process group (`dist.get_rank()`) and the TP mesh as seen by this device.
+Here, we create the mesh and for each device we print its overall rank in the distributed process group (`dist.get_rank()`) and the TP mesh as seen by this device.
 
 The output looks like this:
 ```bash
@@ -162,10 +162,10 @@ torchrun --node_rank=0 --nproc_per_node=8 --nnodes=1 --standalone hsdp1.py
 
 It just runs and finishes with no indication on whether the FSDP happened correctly or not. Wouldn't it be nice if we could also exactly see how the weights were sharded.
 
-For this, I took inspiration from different people's dev/debugging code. What we'll do is set the weights of the model (preferably with contiguous valuse) and let each device print it's set of weights to verify that the sharding of the weights, i.e. both the quantity and the value are as expected. 
+For this, I took inspiration from different people's dev/debugging code. What we'll do is set the weights of the model (preferably with contiguous values) and have each device print its set of weights to verify that the sharding of the weights, i.e. both the quantity and the value are as expected. 
 
 We'll first update the model to set the model weights:
-```bash
+```python
 class ToyModel(nn.Module):
     def __init__(self):
         super(ToyModel, self).__init__()
@@ -179,7 +179,10 @@ class ToyModel(nn.Module):
         return self.relu(self.net1(x))
 ```
 
-I set bias to be false since it messes up the round number of weights and causes some confusion when sharded. We set the weights by directly setting the `self.net1.weight` field. This expects an input of type `nn.Parameter` which we will typecast to. Finally, we pick 100 contiguous numbers by using `torch.arange(101., 201.)` to ensure floating point numbers. You can use any range you want.
+NOTE: I made a mistake in that I set the weights to a single dimensional Tensor instead of 2 dimensional. This affects all the print outputs shown below (which should show sharding on a 2D matrix). 
+I'm too lazy to re-run all of these, so just note that the main parallelism code is correct and that this will be fixed in future posts.
+
+Bias is set to false since it messes up the round number of weights and causes some confusion when sharded. We set the weights by directly setting the `self.net1.weight` field. This expects an input of type `nn.Parameter` which we will typecast to. Finally, we pick 100 contiguous numbers by using `torch.arange(101., 201.)` to ensure floating point numbers. You can use any range you want.
 
 Now for the "printing" code:
 ```python
@@ -226,9 +229,7 @@ We can notice 2 things:
 So, the FSDP split happens as we expected and the DDP replication of parameters is also as expected.
 
 ### Hybrid FSDP - FSDPv2 + DP
-This time, we're going to use the FSDP2 library. The code doesn't change too much.
-
-In fact, just a couple of lines of change. We'll need to import and use the `fully_shard` call instead of the `FullyShardedDataParallel` call.
+This time, we're going to use the FSDP2 library. The code doesn't change too much. In fact, just a couple of lines of change. We'll need to import and use the `fully_shard` call instead of the `FullyShardedDataParallel` call.
 
 ``` python
 from torch.distributed._composable.fsdp import fully_shard
