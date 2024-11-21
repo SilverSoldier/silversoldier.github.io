@@ -1,12 +1,12 @@
 ---
 layout: post
-title: Understand PyTorch TP
+title: Understanding PyTorch TP
 description:  "PyTorch parallelism: Part 4"
 img:
 date: 2024-11-04  +1100
 ---
 
-Code files: `pytorch/torch/distributed/tensor/parallel/style.py` and some of the `dtensor` related files.
+Code files: `pytorch/torch/distributed/tensor/parallel/style.py` and some `dtensor` related files.
 
 The outermost API for Tensor parallelism is the [`parallelize_module`](https://pytorch.org/docs/stable/distributed.tensor.parallel.html#torch.distributed.tensor.parallel.parallelize_module) call. From the docs, an example of how you would use it is:
 ```
@@ -25,8 +25,8 @@ All of these derive from the base class `ParallelStyle` which has an `_apply` fu
 Rowwise and Colwise ParallelStyles are mostly similar in functionality, excepting the changes related to sharding style. They both:
 - Have an `input_layout` and `desired_input_layout` field. `input_layout` is the Placement Type of the input that will be passed (Note this needs to be known before-hand when defining the parallelization plan itself). `desired_input_layout` is how the parallelization needs it for the module. This is hard-set as  `Replicate` for ColwiseParallel and for RowwiseParallel, depends on whether it is Linear module (`Shard(-1)`) or Embedding module (`Replicate`). This is then used by the `prepare_input_fn` which redistributes from `input_layout` to `desired_input_layout`.
   - Note: this `prepare_input_fn` is not called, it is passed as a partial function as the DistributedModule, i.e. output of the `paralellize_module`, and registered as a `pre_forward` function which is only called when an actual input is passed to this module.
-  - For instance, the torchtitan code for TP for Llama, defines the Embedding module to be RowwiseParallel but input is `Replicate`d and output is `Shard`ed.
-- Have an `output_layout` which is actually the `desired_output_layout`, i.e. how does the user expect the output of this module to become. This is used by the `prepare_output_fn` which `redistribute`s the output from how the module outputs it (result of matrix multiplication) to `output_layout`.
+- Have an `output_layout` which is actually the `desired_output_layout`, i.e. how does the user expect the output of this module. This is used by the `prepare_output_fn` which `redistribute`s the output from how the module outputs it, to `output_layout`.
+  - The module output (actual output) is the result of the module operation (mostly matrix multiplication). 
   - Similar to above, this partial function is registered as a `post_forward` function.
 - Have a `partition_fn` to actually shard or partition the module. Row and column parallel define separate `partition_linear` and `partition_embedding`
 All of the above are returned as functions to the `distribute_module`.
@@ -34,7 +34,7 @@ All of the above are returned as functions to the `distribute_module`.
 SequenceParallel:
 - Replicates module parameters, runs sharded computation with input sharded along sequence dimension
 - Has `replicate_module_fn` which simply initializes a DTensor using the `from_local()` call.
-- `prepare_input_fn`: Takes care of redistributing the input if is not already sharded along sequence dimension (Shard(1))
+- `prepare_input_fn`: Takes care of redistributing the input if is not already sharded along sequence dimension `Shard(1)` (hardcoded assuming that the sequence dimension is `1`).
 - `prepare_output_fn`: Return as is
 
 The input and output functions handle what massaging needs to be done on the inputs before calling and outputs after calling. These will be installed as `pre_forward` and `post_forward` hooks and will involve the communication primitives.
@@ -44,8 +44,12 @@ I am going to take a toy `nn.Module` and do a trial run of the TP parallel algor
 2. Let's parallelize it in a ColwiseParallel manner, so that the weight matrix becomes 10x5. (However, the weight matrix is transposed before input is multiplied, so the logic for partitioning the Linear layer results in 5 x 10 size matrix.)
 3. We create a parallelization plan with the linear layer set to ColwiseParallel and call `parallelize_module`.
 4. This will call the `apply` of the ColwiseParallel style which passes the partition function for the Linear module, `prepare_input_fn` and a `prepare_output_fn` to the `distribute_module` API. That API will run the `partition_fn` to shard the parameters and register the `prepare_input_fn` and `prepare_output_fn` as `pre_forward` and `post_forward` hooks respectively.
+	```python
+	>>> model.net1._forward_pre_hooks
+	OrderedDict([(0, <function torch.distributed.tensor._api.distribute_module.<locals>.<lambda>(mod, inputs)>)]) 
+	```
 5. Verify the model is sharded by printing the model weights. Notice that they are actually row-wise sharded as explained before.
-   ```
+   ```bash
 Global rank: 0, Weights array: [DTensor(local_tensor=tensor([[101., 102., 103., 104., 105., 106., 107., 108., 109., 110.],
         [111., 112., 113., 114., 115., 116., 117., 118., 119., 120.],
         [121., 122., 123., 124., 125., 126., 127., 128., 129., 130.],
@@ -63,7 +67,7 @@ Global rank: 1, Weights array: [DTensor(local_tensor=tensor([[151., 152., 153., 
    Input=== from: (Replicate(),) to: (Replicate(),)
    ```
 7. Then the inputs run through the sharded Linear module to get the output.
-8. Then the post_forward is called which does the output conversion from existing layout to desired layout. Existing is how the module outputs and desired is what was registered according to ColwiseParallel. This raises the question of what does the module give as output. See [my previous blog]() on how DTensor matrix multiplication works and how output depends on input types. Output of Replicate x Shard(i) is a Shard(i) along the same dimension. But since there is a transpose involved in weight multiplication, the Shard dimension is also swapped, therefore Shard(1) instead of Shard(0) that we expect. Desired output is Shard(-1) which is the same. Hence no redistribute is needed.
+8. Then the post_forward is called which does the output conversion from existing layout to desired layout. Existing is how the module outputs and desired is what was registered according to ColwiseParallel. This raises the question of what does the module give as output. See [this post on how DTensor matrix multiplication output depends on the input placement types](https://gkavya.in/pytorch-dtensor-mm/). Output of Replicate x Shard(i) is a Shard(i) along the same dimension. But since there is a transpose involved in weight multiplication, the Shard dimension is also swapped, therefore result is Shard(1) instead of Shard(0). Desired output is Shard(-1) which is the same. Hence no redistribute is needed.
    ```
    print(f'Output=== from: {outputs.placements} to: {output_layouts}')
    Output=== from: (Shard(dim=1),) to: (Shard(dim=-1),)
@@ -75,16 +79,16 @@ That's it. A single col-wise sharded Linear layer does not require any redistrib
 
 ## Option 1:
 
-Let's add another Linear module that is Rowwise sharded. This is the logic that is done in the Megatron TP paper as well because it does not require any communication in between the layers in that case.
+Let's add another Linear module that is Rowwise sharded. This is the logic proposed in the Megatron TP paper as well (in the MLP layer) because it does not require an additional communication between the Linear modules in that case.
 We create a net2, a new Linear Layer. The forward function is now `net2(net1(x))`. The parallelize module will shard net2 in a Rowwise manner.
-```
+```python
 class ToyModel(nn.Module):
     def __init__(self):
         super().__init__()
         self.net1 = nn.Linear(10, 10, bias=False)
         self.net2 = nn.Linear(10, 10, bias=False)
 
-		self.net1.weight = nn.Parameter(torch.arange(101., 201.).view(10, 10))
+       	self.net1.weight = nn.Parameter(torch.arange(101., 201.).view(10, 10))
         self.net2.weight = nn.Parameter(torch.arange(101., 201.).view(10, 10))
 
     def forward(self, x):
@@ -102,13 +106,14 @@ model = parallelize_module(
 ```
 
 Let's examine the outputs as before: 
-```
+```bash
 Global rank: 0, Weights array: [DTensor(local_tensor=tensor([
 	[101., 102., 103., 104., 105., 106., 107., 108., 109., 110.],
 	[111., 112., 113., 114., 115., 116., 117., 118., 119., 120.],
 	[121., 122., 123., 124., 125., 126., 127., 128., 129., 130.],
 	[131., 132., 133., 134., 135., 136., 137., 138., 139., 140.],
-	[141., 142., 143., 144., 145., 146., 147., 148., 149., 150.]]), device_mesh=DeviceMesh('cpu', [0, 1]), placements=(Shard(dim=0),)), DTensor(local_tensor=tensor([
+	[141., 142., 143., 144., 145., 146., 147., 148., 149., 150.]]), device_mesh=DeviceMesh('cpu', [0, 1]), placements=(Shard(dim=0),)),
+	DTensor(local_tensor=tensor([
 	[101., 102., 103., 104., 105.],
 	[111., 112., 113., 114., 115.],
 	[121., 122., 123., 124., 125.],
@@ -134,9 +139,9 @@ Output=== from: (Partial(sum),) to: (Replicate(),)
 
 ## Option 2:
 
-Let's try and mix things up by instead adding another Linear module that is Colwise sharded. I initially did the same as before, just declaring net2 also as ColwiseParallel, expecting it to just work. But it complained that the matrix multiplication is (8x5) @ (10x10) and therefore incorrect. net1's output is `Shard(-1)` and net2's expected input is `Replicate` so I assumed it would do the needful redistribution. However, `input_layout` argument needs to be manually specified with the actual current input's layout. As an aside, I feel this could be somehow automated instead of expecting the user to give the correct layout. 
+Let's try and mix things up, by instead adding another Linear module that is Colwise sharded. I initially did the same as before, just declaring net2 also as ColwiseParallel, expecting it to just work. But it complained that the matrix multiplication is (8x5) @ (10x10) and therefore incorrect. net1's output is `Shard(-1)` and net2's expected input is `Replicate` so I assumed it would do the needful redistribution. However, `input_layout` argument needs to be manually specified with the actual current input's layout. As an aside, I feel this could be somehow automated instead of expecting the user to give the correct layout. 
 
-```
+```python
 model = parallelize_module(
     model,
     mesh,
@@ -147,7 +152,7 @@ model = parallelize_module(
 )
 ```
 
-```
+```bash
 Global rank: 0, Weights array: [DTensor(local_tensor=tensor([
 	[101., 102., 103., 104., 105., 106., 107., 108., 109., 110.],
 	[111., 112., 113., 114., 115., 116., 117., 118., 119., 120.],

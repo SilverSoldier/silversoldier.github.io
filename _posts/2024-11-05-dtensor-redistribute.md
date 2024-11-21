@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  Understand DTensor Redistribute 
+title:  Understanding DTensor Redistribute 
 description: "PyTorch parallelism: Part 3"
 img:
 date: 2024-11-04  +1100
