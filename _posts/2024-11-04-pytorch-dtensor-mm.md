@@ -6,6 +6,15 @@ img:
 date: 2024-11-04  +1045
 ---
 
+Part 2 of Pytorch Parallelism Series. Previous part is:
+Part 1: [Pytorch Device Mesh and Composability](https://gkavya.in/pytorch-parallelism/)
+
+Future parts are:
+
+Part 3: [Understanding DTensor Redistribute](https://gkavya.in/dtensor-redistribute/)
+
+Part 4: [Understanding PyTorch TP](https://gkavya.in/pytorch-tp/)
+
 Motivation: to understand TP, I was looking into how DTensor `redistribute` works. But for that, I needed to first understand how DTensor matrix multiplication works (i.e. understanding a Rowwise or Colwise sharded module's output).
 
 First, what is the `DTensor` or distributed tensor. A DTensor is created by "distributing" a normal tensor over a mesh using a placement strategy (my term, not official). This placement strategy is simply an array of Placement Types, one for each dimension of the mesh.

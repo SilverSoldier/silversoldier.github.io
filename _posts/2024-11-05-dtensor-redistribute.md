@@ -6,6 +6,11 @@ img:
 date: 2024-11-04  +1100
 ---
 
+Part 3 of Pytorch Parallelism Series. Previous parts are:
+1. [Pytorch Device Mesh and Composability](https://gkavya.in/pytorch-parallelism/)
+2. [DTensor Matrix Multiplication](https://gkavya.in/pytorch-dtensor-mm/)
+
+
 Motivation: To understand PyTorch TP whose magic happens under the "Redistribute" call.
 
 ## What is redistribute()?

@@ -6,6 +6,11 @@ img:
 date: 2024-11-04  +1100
 ---
 
+Part 4 of Pytorch Parallelism Series. Other parts are:
+1. [Pytorch Device Mesh and Composability](https://gkavya.in/pytorch-parallelism/)
+2. [DTensor Matrix Multiplication](https://gkavya.in/pytorch-dtensor-mm/)
+3. [Understanding DTensor Redistribute](https://gkavya.in/dtensor-redistribute/)
+
 Code files: `pytorch/torch/distributed/tensor/parallel/style.py` and some `dtensor` related files.
 
 The outermost API for Tensor parallelism is the [`parallelize_module`](https://pytorch.org/docs/stable/distributed.tensor.parallel.html#torch.distributed.tensor.parallel.parallelize_module) call. From the docs, an example of how you would use it is:
