@@ -277,5 +277,4 @@ A = torch.rand(M, N, device=DEVICE)
 B = torch.rand(M, N, device=DEVICE)
 ```
 
-
 Next post, I'll look at matrix multiplication and derive the optimizations from scratch.

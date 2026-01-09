@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  Kale: Elastic GPU Scheduling for Online DL Model Training
+title:  (Kale) Elastic GPU Scheduling for Online DL Model Training
 description: "Paper review series 2025"
 img:
 date: 2025-01-15  +1045

@@ -1,6 +1,6 @@
 ---
 layout: post
-title: CacheBlend: Fast Large Language Model Serving for RAG with Cached
+title: (CacheBlend) Fast Large Language Model Serving for RAG with Cached
 description: "Paper review series 2025 - 2"
 img:
 date: 2025-01-30  +1045
