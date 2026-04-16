@@ -277,4 +277,4 @@ A = torch.rand(M, N, device=DEVICE)
 B = torch.rand(M, N, device=DEVICE)
 ```
 
-Next post, I'll look at matrix multiplication and derive the optimizations from scratch.
+The motivation for this whole post was to follow [this excellent article](https://siboehm.com/articles/22/CUDA-MMM) deriving the optimizations for CUDA matrix multiplication and attempt the same with Triton. That will be the subject of a future blog post.
